@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Bootstrap core CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+    <!-- Custom styles for this template -->
+    <link href={{url_for('static', filename="daphne_theme.css")}} rel="stylesheet">
+    <!-- font awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <title>Data Explorer</title>
+</head>
+
+<body>
+
+{% include 'navbar.html' %}
+
+<div class="container mt-4">
+    <div class="card my-4">
+        <div class="card-header text-center">
+            <h3> Individual Discrimination Analysis </h3>
+        </div>
+        <div class="card-body">
+
+                <!-- <div style="background-color: #e9fbfd; border-left: 5px solid #0FA3B1; padding: 15px; border-radius: 8px; font-family: Arial, sans-serif;"> -->
+
+
+                    <button class="collapsible">🔻 What is an Individual Discrimination Analysis?</button>
+                    <div class="content">
+                    <p>This analysis checks whether an individual instance receives <strong>fair treatment</strong> in decision-making.</p>
+
+                    <p>🔍 <strong>How it works:</strong></p>
+                    <ul>
+                        <li>We compare the instance to individuals with <strong>similar characteristics</strong> but from different demographic groups.</li>
+                        <li>One group, called the <strong>reference group</strong> (i.e., White Men), is assumed to receive more favorable outcomes.</li>
+                        <li>If individuals in the reference group <strong>consistently get better predictions</strong> than similar individuals from other groups, it suggests that <strong>race or gender</strong> may be unfairly influencing the decision of the selected instance.</li>
+
+                    </ul>
+
+                    <p>By spotting these patterns, we can detect potential discrimination and ensure fairer decision-making. </p>
+
+                    <p>⚠️<strong> What to Look Out For </strong> </p>
+                    <ul>
+                        <li>Finding truly comparable cases isn't always easy. Sometimes, the so-called "similar" individuals may still differ in important ways, such as <strong>working hours</strong> or <strong>occupation</strong>. These differences could explain variations in outcomes and are not necessarily signs of discrimination.</li>
+                        <li>Before drawing conclusions, double-check whether the selected instances are <strong>similar enough</strong> for a fair comparison. </li>
+                    </ul>
+                </div>
+
+            <br>
+            <br>
+            <div class="container special_container">
+                <div class="instance-box">
+                <div class="indiv_instance_upperbox">
+                    <center> <h6> Instance #{{selected_index}} </h6> </center>
+                </div>
+                <div class="indiv_instance_middlebox">
+                   <center> {{selected_instance_html}} </center>
+                </div>
+                <div class="indiv_instance_lowerbox">
+                   <center> disc_score =  {{disc_score}}, pred. proba = {{pred_proba}} </center>
+                </div>
+                </div>
+
+                <div class="speech-bubble">
+                    <p>Relevant discriminatory pattern:</p>
+                    <p> <center> {{selected_pattern_html}} </center> </p>
+                </div>
+            </div>
+        </div>
+
+    <br>
+    <br>
+
+    <div class="card-header text-center">
+        <br> <h5> Similar Instances from Non-Favoured Group (White Women, Black Women, Black Men) </h5>
+        <p class="monospace">{{pos_ratio_prot}}</p>
+    </div>
+    <!-- This is where table will be shown -->
+    <div class = "container tableFixHead">
+    <table class="table table-condensed" id="my-table">
+        <tr>
+          {% for column_name in column_names %}
+            <th scope="col">{{column_name}}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for prot_result in closest_prot_results %}
+            <tr>
+                {% for column in column_names %}
+                        {% if column in column_names_in_pattern %}
+                            <td> <i> {{prot_result[column]}} </i> </td>
+                        {% elif column == 'sex' or column == 'race' %}
+                            <td>{{prot_result[column]}}</td>
+                        {% elif prot_result[column] != selected_instance[column] %}
+                            <td class="table_orange_highlight">{{prot_result[column]}}</td>
+                        {% else %}
+                            <td>{{prot_result[column]}}</td>
+                        {% endif %}
+                {% endfor %}
+            </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card-header text-center">
+        <br> <h5> Similar Instances from Favoured Group (White Men) </h5>
+        <p class="monospace">{{pos_ratio_ref}}</p>
+    </div>
+
+        <!-- This is where table will be shown -->
+        <div class = "container tableFixHead">
+        <table class="table table-condensed" id="my-table">
+            <tr>
+              {% for column_name in column_names %}
+                    <th scope="col">{{column_name}}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for ref_result in closest_ref_results %}
+                <tr>
+                    {% for column in column_names %}
+                            {% if column in column_names_in_pattern %}
+                                <td> <i> {{ref_result[column]}} </i> </td>
+                            {% elif column == 'sex' or column == 'race' %}
+                                <td>{{ref_result[column]}}</td>
+                            {% elif ref_result[column] != selected_instance[column] %}
+                                <td class="table_orange_highlight">{{ref_result[column]}}</td>
+                            {% else %}
+                                <td>{{ref_result[column]}}</td>
+                            {% endif %}
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+    </div>
+</div>
+
+<script>
+        // JavaScript to toggle collapsible section
+        document.querySelector(".collapsible").addEventListener("click", function() {
+            var content = this.nextElementSibling;
+            if (content.style.display === "block") {
+                content.style.display = "none";
+                this.textContent = "🔻 Show Explanation";
+            } else {
+                content.style.display = "block";
+                this.textContent = "🔺 Hide Explanation";
+            }
+        });
+</script>
+
+
+
+</body>

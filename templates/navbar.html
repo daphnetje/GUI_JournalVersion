@@ -1,0 +1,45 @@
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        .navbar-brand {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700; /* Bold */
+            font-size: 30px; /* Adjust size */
+            line-height: 1.2; /* Adjust line height */
+            letter-spacing: 1px; /* Adjust spacing between letters */
+        }
+    </style>
+</head>
+
+
+<!--expand-lg means that the navbar will be expanded once the breakpoint for a LARGE desktop size is passed. -->
+<nav class="navbar navbar-expand-lg bg-dark navbar-dark">
+    <div class="container d-flex justify-content-center">
+        <a class="navbar-brand d-flex align-items-center" href="{{ url_for('inspect_demographic_groups') }}">
+            <img src="{{ url_for('static', filename='logo_white.png') }}" alt="Logo" height="40" class="me-2">
+            <span> IFAC </span>
+        </a>
+    </div>
+</nav>
+
+<!--    <button-->
+<!--        class="navbar-toggler"-->
+<!--        type="button"-->
+<!--        data-bs-toggle="collapse"-->
+<!--        data-bs-target="#navmenu">   &lt;!&ndash; the navmenu here, refers to the id of the collapsable navbar section that follows later &ndash;&gt;-->
+
+<!--        <span class = "navbar-toggler-icon"> </span>   &lt;!&ndash; navbar toggler icon is the 'hamburger icon' to display the collapsable navbar &ndash;&gt;-->
+<!--    </button>-->
+<!--    &lt;!&ndash; putting all the other buttons into a collapsable navbar, ensures that with smaller screens the navbar items are shown in a clickable menu-->
+<!--    style (i.e. only when menu button is clicked all these nabar items are displayed) &ndash;&gt;-->
+<!--    <div class="collapse navbar-collapse" id="navmenu">-->
+<!--    &lt;!&ndash; ul tag shows that an 'unordered list' is about to start, the class shows that in this case the UL belongs to a navbar.-->
+<!--    each list item is introduced by <li> &ndash;&gt;-->
+<!--    <ul class="navbar-nav">-->
+<!--        <li class="nav-item">-->
+<!--&lt;!&ndash;            <a href="{{url_for('inspect_demographic_groups')}}" class="nav-link"> Inspect Demographic Groups </a>&ndash;&gt;-->
+<!--        </li>-->
+<!--    </ul>-->
+<!--    </div>-->
+<!--    </div>-->
+<!--</nav>-->

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom styles -->
+    <link href="{{ url_for('static', filename='daphne_theme.css') }}" rel="stylesheet">
+    <title>Inspect Demographic Groups</title>
+</head>
+
+<body>
+
+{% include 'navbar.html' %}
+<div class="container mt-4">
+    <button class="collapsible">🔻 What is shown here? </button>
+        <div class="content">
+        <p>For this decision task, we believe that <strong>white men are more frequently associated with high incomes
+        </strong>, while other demographic groups are more often linked to low incomes.
+            Our goal is to uncover <strong>which white men may be benefiting from favoritism</strong> and <strong>which other
+                groups may be experiencing discrimination</strong>.</p>
+        <p>🔍 <strong>How it works:</strong></p>
+        <ul>
+            <li><strong>Defining groups:</strong> We describe at-risk groups based on their <em>sensitive characteristics</em> (e.g., sex, race) and <em>neutral characteristics</em> (e.g., occupation, education level). Each group is linked to a decision outcome (e.g., income = low or high).</li>
+            <li><strong>Confidence:</strong> The confidence displays how strongly the at-risk group is associated with the displayed decision outcome. A higher confidence means that a large proportion of people in the group experience that same outcome.</li>
+            <li><strong>Slift:</strong>  The slift measures how problematic the association between the at-risk group and a decision outcome is. It is calculated, by the decrease in confidence, when swapping around the sensitive characteristics of the at-risk group
+
+            <ul>
+                <li>If the original group consists of <strong>white men</strong>, we check how often the outcome applies to <strong>non-white men</strong>.</li>
+                <li>If the original group consists of <strong>any other demographic group</strong> (e.g., women, white women, black people, black women, black men), we compare it to the reference group of <strong>white men</strong>.</li>
+                <li>A large slift suggests that the sensitive characteristic may be influencing decisions unfairly.</li>
+            </ul>
+        </ul>
+
+
+        <div class="example">
+            <strong>Example of Discrimination</strong>
+            <ul>
+                <li><strong>Group:</strong> Sex = Female, Education = Bachelor’s</li>
+                <li><strong>Decision Outcome:</strong> Income = Low</li>
+                <li><strong>Confidence:</strong> 70% → 70% of individuals in this group are predicted to have a low income.</li>
+                <li><strong>Slift:</strong> 40% → When inspecting all <i> white men </i> with a Bachelor's Degree, the confidence for a <i> low income </i> drops by 40%. <br>
+                                            This means that this group of people are only predicted a low income 30% of the time. </li>
+            </ul>
+        </div>
+
+
+        <div class="example">
+            <strong>Example of Favoritism</strong>
+            <ul>
+                <li><strong>Group:</strong> Sex = Male, Race = White, Occupation = Healthcare</li>
+                <li><strong>Decision Outcome:</strong> Income = High</li>
+                <li><strong>Confidence:</strong> 75% → 75% of individuals in this group are predicted to have a high income.</li>
+                <li><strong>Slift:</strong> 46% → When inspecting other demographic groups working in <i> Healthcare </i>, the confidence for a <i> high income </i> drops by 45%. <br>
+                    This means that this group of people are only predicted a high income 29% of the time.</li>
+            </ul>
+        </div>
+    </div>
+    <br>
+
+    {% for pd_itemset, rules in patterns.items() %}
+            <div class="card my-4">
+            <div class="card-header text-center">
+                <h3>
+                    <a href="{{ url_for('inspect_patterns', pd_itemset=pd_itemset, pos_ratio_pd_itemset = pd_itemset_pos_ratio[pd_itemset] , n_pd_itemset = pd_itemset_n[pd_itemset]) }}" style="color:black;">
+                        {{ pd_itemset_html_dict[pd_itemset] }}
+                    </a>
+                </h3>
+                <br>
+
+                <!-- Wrap both flex elements inside a parent flex container -->
+                <div style="display: flex; justify-content: center; gap: 30px;">
+                    <!-- First image-text pair -->
+                    <div style="display: inline-flex; align-items: center; gap: 10px;">
+                        <img src="{{ url_for('static', filename='n_people.png') }}" alt="N People" width="30">
+                        <span> <b> Number of people </b>  = {{ pd_itemset_n[pd_itemset] }}</span>
+                    </div>
+
+                    <!-- Second image-text pair -->
+                    <div style="display: inline-flex; align-items: center; gap: 10px;">
+                        <img src="{{ url_for('static', filename='pos.png') }}" alt="Positive Decision Ratio" width="30">
+                        <span> <b> Positive Decision Ratio </b> = {{ pd_itemset_pos_ratio[pd_itemset] }}</span>
+                    </div>
+
+                    <!-- Third image-text pair -->
+                    <div style="display: inline-flex; align-items: center; gap: 10px;">
+                        <img src="{{ url_for('static', filename='magnifying_glass.png') }}" alt="N Rules" width="30">
+                        <span> <b> Number of at-risk groups </b>  = {{ rules|length }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div id="carousel-{{ loop.index }}" class="carousel slide" data-bs-ride="false">
+
+                    <!-- Indicators -->
+                    <div class="carousel-indicators">
+                        {% for i in range(0, rules|length, 3) %}
+                            <button type="button" data-bs-target="#carousel-{{ loop.index }}" data-bs-slide-to="{{ loop.index0 }}" class="{% if loop.first %}active{% endif %}" aria-current="true"></button>
+                        {% endfor %}
+                    </div>
+
+                    <div class="carousel-inner">
+                        {% for rule in rules %}
+                            {% if loop.index0 % 3 == 0 %}
+                                <!-- Start a new slide -->
+                                <div class="carousel-item {% if loop.first %}active{% endif %}">
+                                    <div class="row">
+                            {% endif %}
+
+                            <div class="col-md-4">
+                                <div class="disc_pattern_upperbox inactive_upperbox">
+                                    <center>
+                                        <h6>
+                                            <a href="{{url_for('inspect_patterns', pd_itemset=pd_itemset, pattern_id = rule['id'], pos_ratio_pd_itemset = pd_itemset_pos_ratio[pd_itemset] , n_pd_itemset = pd_itemset_n[pd_itemset] )}}" style="color:white;"> At-Risk Group {{loop.index}} </a>
+                                        </h6>
+                                    </center>
+                                </div>
+                                <div class="disc_pattern_middlebox inactive_middlebox">
+                                    <center> {{rule['rule_in_html'] | safe}} </center>
+                                </div>
+                                <div class="disc_pattern_lowerbox inactive_lowerbox">
+                                    <center> conf. = {{rule['confidence']}}, slift = {{rule['slift']}}</center>
+                                </div>
+                            </div>
+
+                            {% if loop.index0 % 3 == 2 or loop.last %}
+                                    </div> <!-- Close row -->
+                                </div> <!-- Close carousel-item -->
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+
+                    <button class="carousel-control-prev btn btn-dark" type="button" data-bs-target="#carousel-{{ loop.index }}" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+
+                    <button class="carousel-control-next btn btn-dark" type="button" data-bs-target="#carousel-{{ loop.index }}" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+
+<!-- Bootstrap JS (Make sure it's included) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"> </script>
+
+<script>
+
+
+        // JavaScript to toggle collapsible section
+        document.querySelector(".collapsible").addEventListener("click", function() {
+            var content = this.nextElementSibling;
+            if (content.style.display === "block") {
+                content.style.display = "none";
+                this.textContent = "🔻 What are Discriminatory Patterns?";
+            } else {
+                content.style.display = "block";
+                this.textContent = "🔺 Hide Explanation";
+            }
+        });
+</script>
+
+</body>
+</html>

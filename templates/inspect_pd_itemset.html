@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Bootstrap core CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+    <!-- Custom styles for this template -->
+    <link href={{url_for('static', filename="daphne_theme.css")}} rel="stylesheet">
+    <!-- font awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <!-- Java script -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+
+
+    <title>Data Explorer</title>
+</head>
+
+<body>
+
+{% include 'navbar.html' %}
+
+
+<div class="container mt-4">
+    <div class="card my-4">
+    <div class="card-header text-center">
+        <h3>
+            <a href="{{ url_for('inspect_patterns', pd_itemset=pd_itemset, n_pd_itemset=n_pd_itemset, pos_ratio_pd_itemset=pos_ratio_pd_itemset) }}" style="color:black;">
+                {{ pd_itemset_in_html }}
+            </a>
+        </h3>
+        <br>
+
+        <!-- Wrap both flex elements inside a parent flex container -->
+        <div style="display: flex; justify-content: center; gap: 30px;">
+            <!-- First image-text pair -->
+            <div style="display: inline-flex; align-items: center; gap: 10px;">
+                <img src="{{ url_for('static', filename='n_people.png') }}" alt="N People" width="30">
+                <span> <b> Number of people </b>  = {{ n_pd_itemset }} </span>
+            </div>
+
+            <!-- Second image-text pair -->
+            <div style="display: inline-flex; align-items: center; gap: 10px;">
+                <img src="{{ url_for('static', filename='pos.png') }}" alt="Positive Decision Ratio" width="30">
+                <span> <b> Positive Decision Ratio </b> = {{ pos_ratio_pd_itemset }} </span>
+            </div>
+
+            <!-- Third image-text pair -->
+            <div style="display: inline-flex; align-items: center; gap: 10px;">
+                <img src="{{ url_for('static', filename='magnifying_glass.png') }}" alt="N Rules" width="30">
+                <span> <b> Number of discriminatory patterns </b>  = {{ rules|length }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-body">
+
+        <button class="collapsible">🔻 Show Explanation</button>
+                    <div class="content">
+                    <p>Below all the at-risk subgroups within the selected demographic group of ... are displayed. /p>
+
+                    <p>🔍 <strong>How it works:</strong></p>
+                    <ul>
+                        <li>We compare the instance to individuals with <strong>similar characteristics</strong> but from different demographic groups.</li>
+                        <li>One group, called the <strong>reference group</strong> (i.e., White Men), is assumed to receive more favorable outcomes.</li>
+                        <li>If individuals in the reference group <strong>consistently get better predictions</strong> than similar individuals from other groups, it suggests that <strong>race or gender</strong> may be unfairly influencing the decision of the selected instance.</li>
+
+                    </ul>
+                </div>
+
+        <br>
+        <br>
+
+        <div id="patterns-carousel" class="carousel slide" data-bs-ride="false">
+
+            <!-- Indicators -->
+            <div class="carousel-indicators">
+                {% for i in range(0, rules|length, 3) %}
+                    <button type="button" data-bs-target="#patterns-carousel" data-bs-slide-to="{{ loop.index0 }}" class="{% if loop.first %}active{% endif %}" aria-current="true"></button>
+                {% endfor %}
+            </div>
+
+           <div class="carousel-inner">
+            {% for rule in rules %}
+                {% if loop.index0 % 3 == 0 %}
+                    <!-- Start a new slide -->
+                    <div class="carousel-item {% if loop.first %}active{% endif %}" data-pattern="{{ rule['id'] }}">
+                        <div class="row">
+                {% endif %}
+
+                {% if active_pattern_id == rule['id'] %}
+                    <div class="col-sm-4">
+                        <div class="disc_pattern_upperbox">
+                            <center>
+                                <h6>
+                                    <a href="{{ url_for('inspect_patterns', pd_itemset=pd_itemset, pattern_id=rule['id'], n_pd_itemset=n_pd_itemset, pos_ratio_pd_itemset=pos_ratio_pd_itemset) }}" style="color:white;">
+                                        At-Risk Group {{ loop.index }}
+                                    </a>
+                                </h6>
+                            </center>
+                        </div>
+                        <div class="disc_pattern_middlebox">
+                            <center> {{ rule['rule_in_html'] }} </center>
+                        </div>
+                        <div class="disc_pattern_lowerbox">
+                            <center> conf. = {{ rule['confidence'] }}, slift = {{ rule['slift'] }}</center>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="col-sm-4">
+                        <div class="disc_pattern_upperbox inactive_upperbox">
+                            <center>
+                                <h6>
+                                    <a href="{{ url_for('inspect_patterns', pd_itemset=pd_itemset, pattern_id=rule['id'], n_pd_itemset=n_pd_itemset, pos_ratio_pd_itemset=pos_ratio_pd_itemset) }}" style="color:white;">
+                                        At-Risk Group {{ loop.index }}
+                                    </a>
+                                </h6>
+                            </center>
+                        </div>
+                        <div class="disc_pattern_middlebox inactive_middlebox">
+                            <center> {{ rule['rule_in_html'] }} </center>
+                        </div>
+                        <div class="disc_pattern_lowerbox inactive_lowerbox">
+                            <center> conf. = {{ rule['confidence'] }}, slift = {{ rule['slift'] }}</center>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% if loop.index0 % 3 == 2 or loop.last %}
+                    </div> <!-- Close row -->
+                </div> <!-- Close carousel-item -->
+                {% endif %}
+            {% endfor %}
+        </div>
+
+
+            <button class="carousel-control-prev btn btn-dark" type="button" data-bs-target="#patterns-carousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+
+            <button class="carousel-control-next btn btn-dark" type="button" data-bs-target="#patterns-carousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+        </div>
+    </div>
+
+
+
+
+<div class="card-header text-center">
+    {% if number_of_affected_instances > 0 %}
+        <h5> Number of instances belonging to this at-risk group: {{number_of_affected_instances}} <br>
+             Ratio of individually discriminated instances: {{number_to_reject + number_to_flip}} / {{number_of_affected_instances}} </h5>
+        <h6>
+            Number of <span style="background-color: #F8D7DA;">flipped predictions</span>: {{number_to_flip}},
+            Number of <span style="background-color: #FFF3CD;">rejected predictions </span>: {{number_to_reject}}
+        </h6>
+        <p> Select individual instances to understand the individual discrimination scores </p>
+    {% else %}
+        <h5> These are all the {{ pd_itemset_in_html }} in the dataset, that do not belong to any of the at-risk subgroups </h5>
+        <p> Click on a subgroup above to inspect which {{ pd_itemset_in_html }} are at risk of discrimination </p>
+    {% endif %}
+</div>
+
+<div class="card-body" >
+<!-- This is where table will be shown -->
+<div class = "container tableFixHead">
+<table class="table table-condensed" id="my-table">
+  <thead class="table-group-divider">
+    <tr>
+      {% for column_name in column_names %}
+        {% if column_name in column_names_in_pattern %}
+        <th scope="col"> <i> {{column_name}} </i> </th>
+        {% else %}
+        <th scope="col"> <b> {{column_name}} </b> </th>
+        {% endif %}
+      {% endfor %}
+        <th scope="col"> pred. prob. </th>
+    {% if indices_to_highlight|length != 0 %}
+        <th scope="col"> disc. score </th>
+    {% endif %}
+    </tr>
+  </thead>
+
+  <tbody>
+    {% for i, row in sorted_by_disc_score_data_to_highlight.iterrows() %}
+            {% if sorted_by_disc_score_data_to_highlight.loc[i]['decision'] == 'Reject' %}
+                <tr class="table-warning">
+            {% elif sorted_by_disc_score_data_to_highlight.loc[i]['decision'] == 'Flip' %}
+                <tr class="table-danger">
+            {% else %}
+                <tr class="table-success">
+            {% endif %}
+
+            {% for column in column_names %}
+                {% if column == 'id' %}
+                    <td> {{ i }} </td>
+                {% elif column in column_names_in_pattern %}
+                    <td> <i> {{row[column]}} </i> </td>
+                {% else %}
+                    <td> {{row[column]}} </td>
+                {% endif %}
+            {% endfor %}
+            <td> {{ row['pred_probability'] | round(2) }} </td>
+            <td> {{ row['disc_score'] | round(2) }} </td>
+              <td>
+                  <form method="post">
+                      <input type="hidden" name="selected_index" value="{{i}}">
+                      <button class="btn btn-outline-secondary bg-white border-bottom-0 border rounded-pill ms-n5" type="submit">
+                            <i class="fa fa-search"></i>
+                      </button>
+                  </form>
+              </td>
+        </tr>
+    {% endfor %}
+
+    {% if indices_to_highlight|length == 0 %}
+        {% for i, row in fair_data.iterrows() %}
+             {% if fair_data.loc[i]['decision'] == 'Reject' %}
+                    <tr class="table-warning">
+             {% else %}
+                    <tr class="table-success">
+            {% endif %}
+            {% for column in column_names %}
+                {% if column == 'id' %}
+                    <td> {{ i }} </td>
+                {% else %}
+                    <td>{{row[column]}}</td>
+                {% endif %}
+            {% endfor %}
+            <td>{{ row['pred_probability'] | round(2) }} </td>
+        </tr>
+        {% endfor %}
+    {% endif %}
+  </tbody>
+  </table>
+</div>
+</div>
+</div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const selectedPattern = new URLSearchParams(window.location.search).get("pattern_id");
+
+        if (selectedPattern) {
+            console.log("Selected Pattern ID:", selectedPattern); // Log the pattern ID from the URL
+
+            // Find all carousel items and log their data-pattern attributes
+            const carouselItems = document.querySelectorAll(".carousel-item");
+            carouselItems.forEach(item => {
+                console.log("Item Pattern ID:", item.dataset.pattern); // Log the pattern ID for each item
+            });
+
+            // Try to find the carousel item with the exact selected pattern
+            let selectedItem = document.querySelector(`.carousel-item[data-pattern="${selectedPattern}"]`);
+
+            if (selectedItem) {
+                console.log("Selected Item Found:", selectedItem); // Ensure we found the correct item
+
+                // Get the carousel element by ID
+                const carousel = document.querySelector("#patterns-carousel");
+                const carouselInstance = new bootstrap.Carousel(carousel); // Ensure carousel is properly initialized
+
+                // Find the index of the selected item
+                const allItems = Array.from(carouselItems);
+                let index = allItems.indexOf(selectedItem);
+
+                if (index !== -1) {
+                    carouselInstance.to(index);  // Move to the correct slide
+                    console.log("Moving to the selected slide at index:", index); // Debug the selected slide index
+                } else {
+                    console.log("No matching carousel item found.");
+                }
+            } else {
+                console.log("No exact match found. Trying to find the left-most item next to the selected pattern.");
+
+                // If the selected pattern isn't found, pick the left-most possible item in the set of three
+                const allItems = Array.from(carouselItems);
+
+                // We find the first carousel item in the same slide group that is next to the selected pattern
+                const closestPattern = allItems.find(item => {
+                    // Find the closest pattern by looking at items 3 steps before or after the selected one
+                    const patternId = parseInt(item.dataset.pattern, 10);
+                    return Math.abs(patternId - selectedPattern) <= 2;  // Adjust the "<= 2" to be more or less, depending on how close you want to allow
+                });
+
+                if (closestPattern) {
+                    console.log("Closest Item Found:", closestPattern); // Log the closest found item
+
+                    // Get the carousel element by ID
+                    const carousel = document.querySelector("#patterns-carousel");
+                    const carouselInstance = new bootstrap.Carousel(carousel); // Ensure carousel is properly initialized
+
+                    // Find the index of the closest item
+                    const index = allItems.indexOf(closestPattern);
+
+                    if (index !== -1) {
+                        carouselInstance.to(index);  // Move to the closest slide
+                        console.log("Moving to the closest slide at index:", index); // Debug the closest slide index
+                    } else {
+                        console.log("No matching carousel item found for the closest pattern.");
+                    }
+                } else {
+                    console.log("No carousel item found for the selected pattern or its closest match.");
+                }
+            }
+        } else {
+            console.log("No pattern_id found in the URL.");
+        }
+    });
+
+
+        // JavaScript to toggle collapsible section
+        document.querySelector(".collapsible").addEventListener("click", function() {
+            var content = this.nextElementSibling;
+            if (content.style.display === "block") {
+                content.style.display = "none";
+                this.textContent = "🔻 Show Explanation";
+            } else {
+                content.style.display = "block";
+                this.textContent = "🔺 Hide Explanation";
+            }
+        });
+
+
+</script>
+
+
+
+</body>
+
+
+</html>
