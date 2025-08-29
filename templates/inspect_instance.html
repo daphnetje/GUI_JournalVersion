@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Bootstrap core CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+    <!-- Custom styles for this template -->
+    <link href={{url_for('static', filename="daphne_theme.css")}} rel="stylesheet">
+    <!-- font awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <title>Data Explorer</title>
+</head>
+
+<body>
+
+{% include 'navbar.html' %}
+<div class="container mt-4">
+<div class="card my-4">
+  <div class="card-header text-center">
+    <h5> Decision for instance: <strong> {{ decision }} </strong> </h5>
+  </div>
+  <div class="card-body">
+    <div class="row align-items-center">
+      <!-- Left Column -->
+      <div class="col-md-6 d-flex justify-content-center">
+          <div class="instance-box">
+            <div class="indiv_instance_upperbox">
+                <center> <h6> Instance #{{selected_index}} </h6> </center>
+            </div>
+            <div class="indiv_instance_middlebox">
+               <center> {{selected_instance_html}} </center>
+            </div>
+             <div class="indiv_instance_lowerbox">
+                   <center> GLU score =  {{glu_score | round(2)}}  </center>
+                </div>
+          </div>
+      </div>
+
+
+      <!-- Right Column -->
+      <div class="col-md-6">
+        <!-- Uncertainty -->
+        <div class="card mb-3 text-center">
+            <div class="card-body d-flex align-items-center justify-content-between">
+            <!-- Left side: Title + Icon -->
+            <div class="d-flex flex-column align-items-center">
+            <h6 class="card-title mb-1">Uncertainty</h6>
+              <img src="{{ url_for('static', filename='uncertainty2.png') }}" alt="Positive Decision Ratio" width="60">
+          </div>
+
+          <!-- Right side: Value -->
+          <div class="fs-5 d-flex align-items-center justify-content-center w-100">
+            <div class="flex-grow-1 text-center">
+                <div class="flex-grow-1 small text-center">
+                    <p class="mb-1"> The <strong> probability </strong> for the predicted label is <strong> {{ pred_proba | round(2) }} </strong> </p>
+                </div>
+            </div>
+          </div>
+          </div>
+
+        </div>
+
+        <!-- Group Unfairness -->
+        <div class="card mb-3 text-center">
+            <div class="card-body d-flex align-items-center justify-content-between">
+            <!-- Left side: Title + Icon -->
+            <div class="d-flex flex-column align-items-center">
+            <h6 class="card-title mb-1">Group Unfairness</h6>
+              <img src="{{ url_for('static', filename='group2.png') }}" alt="Positive Decision Ratio" width="60">
+          </div>
+
+          <!-- Right side: Value   -->
+          <div class="fs-5 d-flex align-items-center justify-content-center w-100">
+            <div class="flex-grow-1 small text-center">
+                <p class="mb-1"> <strong> Relevant subgroup: </strong></p>
+                <p class="mb-1" style="display: block;">{{ selected_pattern_html | safe }}</p>
+                <p class="mb-0"> <strong>confidence :</strong> {{ confidence | round(2) }} <strong>slift:</strong> {{ slift | round(2) }}</p>
+            </div>
+          </div>
+          </div>
+
+        </div>
+
+        <!--Local Unfairness  -->
+        <div class="card mb-3 text-center">
+            <div class="card-body d-flex align-items-center justify-content-between">
+            <!-- Left side: Title + Icon -->
+            <div class="d-flex flex-column align-items-center">
+            <h6 class="card-title mb-1">Local Unfairness</h6>
+              <img src="{{ url_for('static', filename='individual2.png') }}" alt="Positive Decision Ratio" width="60">
+          </div>
+
+          <!-- Right side: Value -->
+          <div class="fs-5 d-flex align-items-center justify-content-center w-100">
+            <div class="flex-grow-1 small text-center">
+                <p class="mb-1"> Situation Testing Score: <strong> {{ disc_score | round(2) }} </strong></p>
+                <p class="mb-1"> See analysis below </p>
+            </div>
+          </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+<br>
+<br>
+
+    <div class="card-header text-center">
+        <br> <h5> Similar Instances from Non-Favoured Group  </h5>
+        <p class="monospace">{{pos_ratio_prot}}</p>
+    </div>
+    <!-- This is where table will be shown -->
+    <div class = "container tableFixHead">
+    <table class="table table-condensed" id="my-table">
+        <tr>
+          {% for column_name in column_names %}
+            <th scope="col">{{column_name}}</th>
+          {% endfor %}
+
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for prot_result in closest_prot_results %}
+            <tr>
+                {% for column in column_names %}
+                        {% if column in sensitive_columns %}
+                            <td>{{prot_result[column]}}</td>
+                        {% elif prot_result[column] != selected_instance[column] %}
+                            <td class="table_orange_highlight">{{prot_result[column]}}</td>
+                        {% else %}
+                            <td>{{prot_result[column]}}</td>
+                        {% endif %}
+                {% endfor %}
+            </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <br>
+    <br>
+
+    <div class="card-header text-center">
+        <br> <h5> Similar Instances from Favoured Group </h5>
+        <p class="monospace">{{pos_ratio_ref}}</p>
+    </div>
+
+        <!-- This is where table will be shown -->
+        <div class = "container tableFixHead">
+        <table class="table table-condensed" id="my-table">
+            <tr>
+              {% for column_name in column_names %}
+                    <th scope="col">{{column_name}}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for ref_result in closest_ref_results %}
+                <tr>
+                    {% for column in column_names %}
+                            {% if column in sensitive_columns %}
+                                <td>{{ref_result[column]}}</td>
+                            {% elif ref_result[column] != selected_instance[column] %}
+                                <td class="table_orange_highlight">{{ref_result[column]}}</td>
+                            {% else %}
+                                <td>{{ref_result[column]}}</td>
+                            {% endif %}
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+</div>
+</div>
+
+
+</body>

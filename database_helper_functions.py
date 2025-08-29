@@ -122,3 +122,11 @@ def decide_keep_reject_flip_rule_covered_data(row, t_sit_test, t_unf_unc, t_f_un
             return "Reject"
         else:
             return "Keep"
+
+
+def number_of_positive_decisions(decision_vector, positive_decision):
+    value_counts = decision_vector.value_counts()
+    if positive_decision in value_counts.keys():
+        return value_counts[positive_decision]
+    else:
+        return 0

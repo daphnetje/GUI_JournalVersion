@@ -5,12 +5,7 @@ from database_helper_functions import get_instances_covered_by_rule_base_and_con
 
 
 
-def number_of_positive_decisions(decision_vector):
-    value_counts = decision_vector.value_counts()
-    if 'high' in value_counts.keys():
-        return value_counts['high']
-    else:
-        return 0
+
 
 def positive_decision_ratio(data, neighbours_indices):
     decision_info_of_neighbours = data.loc[neighbours_indices, 'income']

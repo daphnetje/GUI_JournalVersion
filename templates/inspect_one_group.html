@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Bootstrap core CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+    <!-- Custom styles for this template -->
+    <link href={{url_for('static', filename="daphne_theme.css")}} rel="stylesheet">
+    <!-- font awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <!-- Java script -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+
+
+    <title>Inspecting One Group</title>
+</head>
+<body>
+
+{% include 'navbar.html' %}
+
+
+<div class="container mt-4">
+<div class="card my-4">
+    <div class="card-header text-center">
+
+        <h3>
+            <a href="{{ url_for('inspect_one_demographic_group', pd_itemset=pd_itemset, n_pd_itemset=n_pd_itemset, pos_ratio_pd_itemset=pos_ratio_pd_itemset) }}" style="color:black;">
+                {{ pd_itemset_in_html }}
+            </a>
+        </h3>
+        <br>
+
+        <!-- Wrap both flex elements inside a parent flex container -->
+        <div style="display: flex; justify-content: center; gap: 30px;">
+            <!-- First image-text pair -->
+            <div style="display: inline-flex; align-items: center; gap: 10px;">
+                <img src="{{ url_for('static', filename='n_people.png') }}" alt="N People" width="30">
+                <span> <b> Number of people </b>  = {{ n_pd_itemset }} </span>
+            </div>
+
+            <!-- Second image-text pair -->
+            <div style="display: inline-flex; align-items: center; gap: 10px;">
+                <img src="{{ url_for('static', filename='pos.png') }}" alt="Positive Decision Ratio" width="30">
+                <span> <b> Positive Decision Ratio </b> = {{ pos_ratio_pd_itemset }} </span>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: center; gap: 30px;">
+            <!-- Third image-text pair -->
+            <div style="display: inline-flex; align-items: center; gap: 10px;">
+                <img src="{{ url_for('static', filename='flipped.png') }}" alt="Flipped" width="30">
+                <span> <b> Number of flipped decisions  </b>  = {{ n_flipped }}</span>
+            </div>
+
+            <!-- Fourth image-text pair -->
+            <div style="display: inline-flex; align-items: center; gap: 10px;">
+                <img src="{{ url_for('static', filename='deferred.png') }}" alt="Rejected" width="30">
+                <span> <b> Number of rejected decisions  </b>  = {{ n_rejected }}</span>
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+<div class="card-header text-center">
+    {% if action == '' %}
+        <h5> Select which predictions/rejections you want to view </h5>
+    {% elif action == 'Keep' %}
+        <h5> You are now viewing the predictions that have been <i> kept </i> </h5>
+    {% elif action == 'Fairness-Flip' %}
+        <h5> You are now viewing the predictions whose labels are proposed to be <i> flipped </i></h5>
+    {% elif action == 'Fairness-Reject' %}
+       <h5> You are now viewing the predictions whose labels are <i> rejected </i> out of unfairness concerns </h5>
+    {% elif action == 'Uncertainty-Reject' %}
+       <h5> You are now viewing the predictions whose labels are <i> rejected </i> because of uncertainty </h5>
+    {% endif %}
+
+   <!-- to add Keep Button insert same code as below with action="Keep"-->
+
+    <div class="d-flex justify-content-center gap-3 mb-3">
+             <a href="{{ url_for('inspect_one_demographic_group',
+                                        pd_itemset=pd_itemset,
+                                        pd_itemset_in_html = pd_itemset_in_html,
+                                        n_pd_itemset=n_pd_itemset,
+                                        pos_ratio_pd_itemset=pos_ratio_pd_itemset,
+                                        n_flipped = n_flipped,
+                                        n_rejected = n_rejected,
+                                        action='Fairness-Flip') }}">
+                 <button type="submit" class="custom-btn {% if action == 'Fairness-Flip' %}clicked{% endif %}"> Flipped Predictions </button>
+            </a>
+
+            <a href="{{ url_for('inspect_one_demographic_group',
+                                        pd_itemset=pd_itemset,
+                                        pd_itemset_in_html = pd_itemset_in_html,
+                                        n_pd_itemset=n_pd_itemset,
+                                        pos_ratio_pd_itemset=pos_ratio_pd_itemset,
+                                        n_flipped = n_flipped,
+                                        n_rejected = n_rejected,
+                                        action='Fairness-Reject') }}">
+                 <button type="submit"
+                        class="custom-btn {% if action == 'Fairness-Reject' %}clicked{% endif %}"> Unfairness-Based Rejections </button>
+            </a>
+
+            <a href="{{ url_for('inspect_one_demographic_group',
+                                        pd_itemset=pd_itemset,
+                                        n_pd_itemset=n_pd_itemset,
+                                        pd_itemset_in_html = pd_itemset_in_html,
+                                        pos_ratio_pd_itemset=pos_ratio_pd_itemset,
+                                        n_flipped = n_flipped,
+                                        n_rejected = n_rejected,
+                                        action='Uncertainty-Reject') }}">
+                 <button type="submit"
+                        class="custom-btn {% if action == 'Uncertainty-Reject' %}clicked{% endif %}">Uncertainty-Based Rejections</button>
+            </a>
+    </div>
+</div>
+
+
+<div class="card-body" >
+
+{% if action == '' %}
+    <h5> <center> </center></h5>
+{% elif to_display_data|length == 0 %}
+    <h5> <center> There is no relevant data to display </center> </h5>
+{% else %}
+    <!-- This is where table will be shown -->
+    <div class = "container tableFixHead">
+    <table class="table table-condensed" id="my-table">
+      <thead class="table-group-divider">
+        <tr>
+            <th scope="col"> {{ relevant_selector_column }} </th>
+          {% for column_name in dataset_columns %}
+            <th scope="col"> {{column_name}} </th>
+          {% endfor %}
+            {% if relevant_selector_column == 'GLU_score' %}
+                <th scope="col"> </th>
+            {% endif %}
+        </tr>
+      </thead>
+      <tbody>
+
+          {% for i, row in to_display_data.iterrows() %}
+                <tr>
+                    <td> {{row[relevant_selector_column] | round(2)}} </td>
+                {% for column_name in dataset_columns %}
+                    <td> {{row[column_name]}} </td>
+                {% endfor %}
+                {% if relevant_selector_column == 'GLU_score' %}
+                    <td>
+                      <form method="post">
+                          <input type="hidden" name="selected_index" value="{{i}}">
+                          <button class="btn btn-outline-secondary bg-white border-bottom-0 border rounded-pill ms-n5" type="submit">
+                                <i class="fa fa-search"></i>
+                          </button>
+                      </form>
+                  </td>
+                {% endif %}
+                </tr>
+          {% endfor %}
+      </tbody>
+    </table>
+    </div>
+{% endif %}
+</div>
+</div>
+</div>
+
+</body>
+</html>

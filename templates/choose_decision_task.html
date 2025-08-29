@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Bootstrap core CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+    <!-- Custom styles for this template -->
+    <link href={{url_for('static', filename="daphne_theme.css")}} rel="stylesheet">
+    <!-- font awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <title>Choose Decision Task</title>
+</head>
+
+<body>
+
+{% include 'navbar.html' %}
+<div class="container mt-4">
+<div class="container mt-4">
+<div class="card my-4">
+  <div class="card-header text-center">
+    <h5> Select a Decision Task </h5>
+  </div>
+  <div class="card-body">
+    <div class="row align-items-center">
+      <!-- Left Column -->
+      <div class="col-md-6 d-flex justify-content-center">
+          <form method="POST">
+            <div class="d-flex align-items-center">
+              <select name="task" id="task" class="form-select form-select-lg me-3" onchange="updateTaskInfo()"
+                      style="background-color: #F8F8F8;">
+                {% for option in options %}
+                  <option value="{{ option }}">{{ option.capitalize() }}</option>
+                {% endfor %}
+              </select>
+              <button type="submit" class="btn btn-primary px-4 py-2 rounded-pill fw-semibold" style="background-color: #FFC107; border: 2px solid #E8E8E8;">
+                Go
+              </button>
+            </div>
+          </form>
+      </div>
+
+
+      <!-- Right Column -->
+      <div class="col-md-6">
+        <!-- Task -->
+        <div class="card mb-3 text-center" style="background-color: #F8F8F8;" >
+            <div class="card-body d-flex align-items-center justify-content-between">
+            <!-- Left side: Title + Icon -->
+            <div class="d-flex flex-column align-items-center">
+                <img src="{{ url_for('static', filename='task.png') }}" alt="task" width="60">
+            </div>
+
+
+          <!-- Right side: Value -->
+          <div class="fs-5 d-flex align-items-center justify-content-center w-100">
+            <div class="flex-grow-1 text-center">
+                <div class="flex-grow-1 small text-center">
+                    <p class="mb-1" id="task-name"></p>
+                </div>
+            </div>
+          </div>
+          </div>
+
+
+        <!-- Sensitive attributes -->
+            <div class="card-body d-flex align-items-center justify-content-between">
+            <!-- Left side: Title + Icon -->
+            <div class="d-flex flex-column align-items-center">
+              <img src="{{ url_for('static', filename='warning.png') }}" alt="warning" width="60">
+            </div>
+
+          <!-- Right side: Value   -->
+          <div class="fs-5 d-flex align-items-center justify-content-center w-100">
+              <div class="flex-grow-1 small text-center">
+                  <p class="mb-1" id="sensitive-attributes"></p>
+              </div>
+          </div>
+          </div>
+
+        <!--Other attributes  -->
+            <div class="card-body d-flex align-items-center justify-content-between">
+            <!-- Left side: Title + Icon -->
+            <div class="d-flex flex-column align-items-center">
+              <img src="{{ url_for('static', filename='folder.png') }}" alt="other attirubtes" width="60">
+            </div>
+
+          <!-- Right side: Value -->
+          <div class="fs-5 d-flex align-items-center justify-content-center w-100">
+              <div class="flex-grow-1 small text-center">
+                    <p class="mb-1" id="other-attributes"> </p>
+              </div>
+          </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+</div>
+</body>
+
+<script>
+  const taskData = {
+    'adult': {
+      name:  `<b> Task </b>: Predicting income levels <br> <i> high vs. low </i> `,
+      sensitive: `<b> Sensitive Attributes: </b> <br> <i> race (black vs. white) <br> sex (male vs. female) </i> `,
+      other:     `<b> Non-Sensitive Attributes: </b> <br> <i> age, marital status, education, occupation, <br> workinghours, workclass </i>`
+    },
+    'oulad': {
+      name:  `<b> Task </b>: Predicting exam performance <br> <i> pass vs. fail </i> `,
+      sensitive: `<b> Sensitive Attributes: </b> <br> <i> disability status (with or without disability) </i> `,
+      other: `<b> Non-Sensitive Attributes: </b> <br> <i> gender, age, socio-economic status (SES), <br> highest education, studied credits, code module </i>`
+    },
+    'recidivism': {
+      name: `<b> Task </b>: Predicting Recidivism of Criminal Offenders <br> <i> yes vs. no </i>`,
+      sensitive: `<b> Sensitive Attributes: </b> <br> <i> race (caucasian vs. african american vs. other) </i>`,
+      other: `<b> Non-Sensitive Attributes: </b> <br> <i> age, case type, offense, #prior felonies, <br> #prior misdemeanor, #prior criminal traffics </i>`
+    },
+    'census': {
+      name:  `<b> Task </b>: Predicting income levels <br> <i> high vs. low </i> `,
+      sensitive: `<b> Sensitive Attributes: </b> <br> <i>  sex (male vs. female) </i> `,
+      other:     `<b> Non-Sensitive Attributes: </b> <br> <i> age,.... </i>`
+
+    },
+    'mortgage': {
+      name:  `<b> Task </b>: Predicting mortgage decision <br> <i> approved vs. denied </i> `,
+      sensitive: `<b> Sensitive Attributes: </b> <br> <i>  race (white vs. black) </i> `,
+      other:     `<b> Non-Sensitive Attributes: </b> <br> <i> age,.... </i>`
+
+    },
+  };
+
+  function updateTaskInfo() {
+    const selected = document.getElementById("task").value;
+    const info = taskData[selected];
+
+    document.getElementById("task-name").innerHTML = info.name;
+    document.getElementById("sensitive-attributes").innerHTML = info.sensitive;
+    document.getElementById("other-attributes").innerHTML = info.other;
+  }
+
+  document.addEventListener("DOMContentLoaded", updateTaskInfo);
+</script>
+
+</html>

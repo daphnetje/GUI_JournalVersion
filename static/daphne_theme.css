@@ -6,6 +6,8 @@
     width: 100%;
 }
 
+
+
 .box {
     background-color: lightblue;
     border: 1px solid blue;
@@ -119,7 +121,7 @@
     flex-direction: column;
     width: auto;
     min-width: 500px; /* Ensures it doesn’t get too small */
-    max-width: 60%; /* Restricts maximum size */
+    max-width: 80%; /* Restricts maximum size */
 }
 
 .indiv_instance_upperbox {
@@ -160,7 +162,7 @@
 }
 
 #my-table .table_orange_highlight {
-    background-color: #f0cfc7;
+    background-color: #FFCFB9;
 }
 
 .bg-custom-orange {
@@ -190,21 +192,9 @@
     padding: 15px;
     border-radius: 10px;
     border: 2px solid black;
-    max-width: 40%;
+    max-width: 80%;
 }
 
-.speech-bubble::before {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: -15px;
-    width: 0;
-    height: 0;
-    border-top: 2px solid black;
-    border-bottom: 2px solid black;
-    border-right: 15px solid #E0E0E0;
-    transform: translateY(-50%);
-}
 
 /* Styling the collapsible button */
 .collapsible {
@@ -245,4 +235,20 @@
     border-bottom: 2px solid black;
     border-right: 2px solid black;
     margin-top: 10px;
+}
+
+.custom-btn {
+    background-color: #E8F9FC;
+    border: 1px solid #ccc;
+    color: black;
+    padding: 8px 16px;
+    border-radius: 6px;
+}
+
+.custom-btn.clicked {
+    background-color: #FFE7A3;
+}
+
+.custom-btn:hover {
+    background-color: #dff5f8;
 }
